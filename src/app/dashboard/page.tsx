@@ -37,10 +37,6 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const apiLimitUsed = 24;
-  const apiLimitTotal = 1000;
-  const apiLimitPct = Math.min(100, Math.round((apiLimitUsed / apiLimitTotal) * 100));
-
   return (
     <div className="min-h-screen flex bg-[#fafafa]">
       {/* Overlay for mobile */}
@@ -69,26 +65,6 @@ export default function DashboardPage() {
         )}
 
         <div className="mx-auto w-full max-w-5xl">
-        {/* Gradient Plan Card */}
-        <section className="rounded-2xl p-6 sm:p-8 text-white shadow-lg mb-8 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-amber-400">
-          <div className="flex items-start justify-start">
-            <div>
-              <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium leading-none tracking-wide">CURRENT PLAN</span>
-              <h2 className="mt-4 text-4xl font-semibold">Researcher</h2>
-            </div>
-          </div>
-          <div className="mt-8">
-            <div className="mb-2 flex items-center gap-2 text-sm">
-              <span className="font-medium">API Limit</span>
-              <span className="opacity-80">•</span>
-              <span className="opacity-80">{apiLimitUsed} / {apiLimitTotal} Requests</span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-white/30">
-              <div className="h-2 rounded-full bg-white" style={{ width: `${apiLimitPct}%` }} />
-            </div>
-          </div>
-        </section>
-
         {/* API Keys Section */}
         <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm">
           <div className="flex items-center justify-between p-4 sm:p-5">
