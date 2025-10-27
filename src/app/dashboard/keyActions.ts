@@ -51,3 +51,25 @@ export async function validateApiKey(key: string): Promise<{
   return await res.json();
 }
 
+export async function summarizeGithubRepo(
+  apiKey: string,
+  githubUrl: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  message?: string;
+  data?: {
+    githubUrl: string;
+    apiKeyOwner: string;
+    usageCount: number;
+    readmeContent?: string;
+  };
+}> {
+  const res = await fetch("/api/github-summarizer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ apiKey, githubUrl }),
+  });
+  return await res.json();
+}
+
