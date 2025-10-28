@@ -62,7 +62,8 @@ export async function summarizeGithubRepo(
     githubUrl: string;
     apiKeyOwner: string;
     usageCount: number;
-    readmeContent?: string;
+    summary?: string;
+    coolFacts?: string[];
   };
 }> {
   const res = await fetch("/api/github-summarizer", {

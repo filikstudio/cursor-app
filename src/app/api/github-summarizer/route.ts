@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { validateApiKey, incrementApiKeyUsage } from "@/lib/apiKeyValidator";
+import { summarizeGithubReadme } from "@/lib/githubSummarizer";
 
 export async function POST(request: Request) {
-  console.log("POST /api/github-summarizer");
+  console.log("\n=== POST /api/github-summarizer ===");
+  console.log("Timestamp:", new Date().toISOString());
 
   try {
     const body = await request.json();
     const { apiKey, githubUrl } = body ?? {};
+    console.log("Request body:", { apiKey: apiKey ? "***" + apiKey.slice(-4) : "missing", githubUrl });
 
     // Check if required fields are provided
     if (!apiKey) {
@@ -30,7 +33,9 @@ export async function POST(request: Request) {
     }
 
     // Validate the API key using the common validator
+    console.log("Validating API key...");
     const validationResult = await validateApiKey(apiKey);
+    console.log("API key validation result:", validationResult.valid ? "✓ Valid" : "✗ Invalid");
 
     if (!validationResult.valid) {
       return NextResponse.json(
@@ -44,11 +49,15 @@ export async function POST(request: Request) {
 
     // API key is valid - increment usage count
     const keyData = validationResult.keyData!;
+    console.log("API key owner:", keyData.name);
     await incrementApiKeyUsage(apiKey);
 
     // Validate GitHub URL format
+    console.log("Validating GitHub URL format...");
     const githubRepoRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/i;
     if (!githubRepoRegex.test(githubUrl)) {
+      console.log("✗ Invalid GitHub URL format");
+
       return NextResponse.json(
         {
           success: false,
@@ -61,9 +70,11 @@ export async function POST(request: Request) {
     // Extract owner and repo from GitHub URL
     const urlParts = githubUrl.replace(/https?:\/\/(www\.)?github\.com\//, '').split('/');
     const [owner, repo] = urlParts;
+    console.log("✓ Valid GitHub URL - Owner:", owner, "Repo:", repo);
 
     try {
       // Fetch README content using GitHub API
+      console.log("Fetching README from GitHub API...");
       const readmeResponse = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/readme`,
         {
@@ -74,6 +85,7 @@ export async function POST(request: Request) {
       );
 
       if (!readmeResponse.ok) {
+        console.log("✗ Failed to fetch README - Status:", readmeResponse.status);
         return NextResponse.json(
           {
             success: false,
@@ -84,19 +96,31 @@ export async function POST(request: Request) {
       }
 
       const readmeContent = await readmeResponse.text();
+      console.log("✓ README fetched successfully - Length:", readmeContent.length, "characters");
 
-      // Update the success response to include README content
+      // Summarize the README using LLM
+      console.log("Starting LLM summarization...");
+      const startTime = Date.now();
+      const summary = await summarizeGithubReadme(readmeContent);
+      const duration = Date.now() - startTime;
+      console.log("✓ Summarization complete - Duration:", duration, "ms");
+      console.log("Summary length:", summary.summary.length, "chars, Cool facts:", summary.coolFacts.length);
+
+      // Return the summarized content
+      console.log("=== Request completed successfully ===\n");
       return NextResponse.json({
         success: true,
-        message: "GitHub repository README retrieved successfully",
+        message: "GitHub repository README summarized successfully",
         data: {
           githubUrl,
           apiKeyOwner: keyData.name,
           usageCount: keyData.usage_count + 1,
-          readmeContent
+          summary: summary.summary,
+          coolFacts: summary.coolFacts,
         },
       });
     } catch (error) {
+      console.error("✗ Error in GitHub/LLM processing:", error);
       return NextResponse.json(
         {
           success: false,
@@ -106,7 +130,8 @@ export async function POST(request: Request) {
       );
     }
   } catch (error) {
-    console.error("Error in github-summarizer:", error);
+    console.error("✗ Fatal error in github-summarizer:", error);
+    console.log("=== Request failed ===\n");
     return NextResponse.json(
       {
         success: false,
@@ -116,4 +141,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

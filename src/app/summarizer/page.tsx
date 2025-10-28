@@ -10,7 +10,8 @@ export default function SummarizerPage() {
   const [apiKey, setApiKey] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [readmeContent, setReadmeContent] = useState<string | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [coolFacts, setCoolFacts] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { toast, showToast } = useToast();
 
@@ -28,15 +29,17 @@ export default function SummarizerPage() {
     }
 
     setIsSubmitting(true);
-    setReadmeContent(null); // Clear previous content
+    setSummary(null); // Clear previous content
+    setCoolFacts([]);
 
     try {
       const result = await summarizeGithubRepo(apiKey, githubUrl);
 
       if (result.success) {
-        // Display the README content from the backend
-        setReadmeContent(result.data?.readmeContent || "No README content available");
-        showToast("Repository processed successfully!", "success");
+        // Display the summary and cool facts from the backend
+        setSummary(result.data?.summary || "No summary available");
+        setCoolFacts(result.data?.coolFacts || []);
+        showToast("Repository summarized successfully!", "success");
       } else {
         showToast(result.error || "Failed to process repository", "error");
       }
@@ -188,28 +191,59 @@ export default function SummarizerPage() {
           </section>
 
           {/* Results Section */}
-          {readmeContent && (
-            <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-6 w-6 text-green-600"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                README Content
-              </h2>
-              <div className="prose max-w-none">
-                <pre className="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  {readmeContent}
-                </pre>
+          {summary && (
+            <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm p-6 space-y-6">
+              {/* Summary Section */}
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="h-6 w-6 text-blue-600"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Summary
+                </h2>
+                <p className="text-gray-700 leading-relaxed bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  {summary}
+                </p>
               </div>
+
+              {/* Cool Facts Section */}
+              {coolFacts.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="h-6 w-6 text-purple-600"
+                    >
+                      <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z" />
+                    </svg>
+                    Cool Facts
+                  </h2>
+                  <ul className="space-y-2">
+                    {coolFacts.map((fact, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-3 text-gray-700 bg-purple-50 p-3 rounded-lg border border-purple-100"
+                      >
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">
+                          {index + 1}
+                        </span>
+                        <span className="flex-1">{fact}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </section>
           )}
 
