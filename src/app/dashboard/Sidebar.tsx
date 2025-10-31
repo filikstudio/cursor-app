@@ -12,7 +12,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <aside className={`w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out ${
       isOpen ? "translate-x-0" : "-translate-x-full"
-    } fixed lg:static h-screen z-50`}>
+    } fixed lg:static h-screen z-[60]`}>
       <div className="p-6 border-b border-gray-200 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Key store</h1>
         <button

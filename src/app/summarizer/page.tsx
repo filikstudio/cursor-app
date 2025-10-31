@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Sidebar from "../dashboard/Sidebar";
 import { summarizeGithubRepo } from "../dashboard/keyActions";
 import { useToast } from "../dashboard/useToast";
 import Toast from "../dashboard/Toast";
+import Header from "@/components/Header";
 
 export default function SummarizerPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [apiKey, setApiKey] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,6 +19,13 @@ export default function SummarizerPage() {
   const [coolFacts, setCoolFacts] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { toast, showToast } = useToast();
+
+  // Auth check
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +63,20 @@ export default function SummarizerPage() {
     }
   };
 
+  // Show loading spinner while checking auth
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex bg-[#fafafa]">
       {/* Overlay for mobile */}
@@ -65,27 +91,7 @@ export default function SummarizerPage() {
 
       {/* Main Content */}
       <div className="flex-1 p-8 overflow-auto relative">
-        {/* Toggle Button - Only show when sidebar is closed */}
-        {!isSidebarOpen && (
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-600 shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-300"
-            aria-label="Open sidebar"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                fillRule="evenodd"
-                d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        )}
+        <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
 
         <div className="mx-auto w-full max-w-4xl">
           {/* Header */}

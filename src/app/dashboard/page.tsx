@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import AddModal from "./addModal";
 import Sidebar from "./Sidebar";
 import { fetchApiKeys, saveApiKey, deleteApiKey } from "./keyActions";
 import { useToast } from "./useToast";
 import Toast from "./Toast";
+import Header from "@/components/Header";
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [records, setRecords] = useState<Array<{ id: string; name: string; usage: number; key: string }>>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,8 +24,17 @@ export default function DashboardPage() {
   const { toast, showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // Auth check
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
   // Load from API
   useEffect(() => {
+    if (status !== "authenticated") return;
+    
     let isMounted = true;
     (async () => {
       try {
@@ -35,7 +49,21 @@ export default function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [status]);
+
+  // Show loading spinner while checking auth
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex bg-[#fafafa]">
@@ -51,19 +79,8 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="flex-1 p-8 overflow-auto relative">
-        {/* Toggle Button - Only show when sidebar is closed */}
-        {!isSidebarOpen && (
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-600 shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-300"
-            aria-label="Open sidebar"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-              <path fillRule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
-            </svg>
-          </button>
-        )}
-
+        <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
+        
         <div className="mx-auto w-full max-w-5xl">
         {/* API Keys Section */}
         <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm">
