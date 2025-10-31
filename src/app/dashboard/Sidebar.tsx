@@ -13,8 +13,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <aside className={`w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out ${
       isOpen ? "translate-x-0" : "-translate-x-full"
     } fixed lg:static h-screen z-[60]`}>
-      <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Key store</h1>
+      <div className="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Key store</h1>
         <button
           onClick={onClose}
           className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-600 hover:bg-gray-100 transition-colors"
@@ -25,7 +25,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </svg>
         </button>
       </div>
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-3 sm:p-4">
         <ul className="space-y-1">
           <li>
             <a 

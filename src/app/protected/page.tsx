@@ -45,35 +45,35 @@ export default function ProtectedPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto relative">
+      <div className="flex-1 p-4 sm:p-8 overflow-auto relative pt-20 sm:pt-8">
         <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
 
         <div className="mx-auto w-full max-w-4xl">
           <div className="flex items-center justify-center min-h-[70vh]">
-            <div className="text-center">
+            <div className="text-center px-4">
               {/* Success Icon */}
-              <div className="inline-flex items-center justify-center rounded-full bg-green-100 p-6 mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-16 w-16 text-green-600">
+              <div className="inline-flex items-center justify-center rounded-full bg-green-100 p-4 sm:p-6 mb-4 sm:mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-12 w-12 sm:h-16 sm:w-16 text-green-600">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
               </div>
               
               {/* Protected Text */}
-              <h1 className="text-6xl font-bold text-gray-900 mb-4">Protected</h1>
-              <p className="text-xl text-gray-600 mb-8">
+              <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-3 sm:mb-4">Protected</h1>
+              <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-8 px-4">
                 You have successfully accessed the protected area.
               </p>
               
               {/* Badge */}
-              <div className="inline-flex items-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 mr-2">
+              <div className="inline-flex items-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 sm:h-5 sm:w-5 mr-2">
                   <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
                 </svg>
                 Access Granted
               </div>
               
               {/* Action Buttons */}
-              <div className="mt-12 flex gap-4 justify-center">
+              <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center px-4">
                 <a
                   href="/dashboard"
                   className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-purple-700 transition-colors duration-200"

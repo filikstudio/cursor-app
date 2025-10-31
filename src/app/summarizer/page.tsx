@@ -90,22 +90,22 @@ export default function SummarizerPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto relative">
+      <div className="flex-1 p-4 sm:p-8 overflow-auto relative pt-20 sm:pt-8">
         <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
 
         <div className="mx-auto w-full max-w-4xl">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               GitHub Repository Summarizer
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Enter your API key and GitHub repository URL to get a summary
             </p>
           </div>
 
           {/* Form Card */}
-          <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm p-6 mb-6">
+          <section className="rounded-xl sm:rounded-2xl border border-black/[.08] bg-white shadow-sm p-4 sm:p-6 mb-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* API Key Input */}
               <div>

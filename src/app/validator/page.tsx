@@ -82,12 +82,12 @@ export default function ValidatorPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto relative">
+      <div className="flex-1 p-4 sm:p-8 overflow-auto relative pt-20 sm:pt-8">
         <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
 
         <div className="mx-auto w-full max-w-2xl">
           {/* Validator Card */}
-          <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm p-8">
+          <section className="rounded-xl sm:rounded-2xl border border-black/[.08] bg-white shadow-sm p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="inline-flex items-center justify-center rounded-lg bg-purple-100 p-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-6 w-6 text-purple-600">

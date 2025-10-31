@@ -78,15 +78,15 @@ export default function DashboardPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto relative">
+      <div className="flex-1 p-4 sm:p-8 overflow-auto relative pt-20 sm:pt-8">
         <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
         
         <div className="mx-auto w-full max-w-5xl">
         {/* API Keys Section */}
-        <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm">
-          <div className="flex items-center justify-between p-4 sm:p-5">
+        <section className="rounded-xl sm:rounded-2xl border border-black/[.08] bg-white shadow-sm overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-5">
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold">API Keys</h3>
+              <h3 className="text-base sm:text-lg font-semibold">API Keys</h3>
               <button
                 type="button"
                 onClick={() => setIsAddOpen(true)}
@@ -102,14 +102,14 @@ export default function DashboardPage() {
             <p className="hidden sm:block text-sm text-gray-500">The key is used to authenticate your requests.</p>
           </div>
 
-          {/* Header Row */}
-          <div className="grid grid-cols-12 items-center px-4 sm:px-5 py-2 text-xs font-medium text-gray-500">
+          {/* Header Row - Hidden on mobile, shown on desktop */}
+          <div className="hidden md:grid grid-cols-12 items-center px-4 sm:px-5 py-2 text-xs font-medium text-gray-500">
             <div className="col-span-3">NAME</div>
             <div className="col-span-2">USAGE</div>
             <div className="col-span-5">KEY</div>
             <div className="col-span-2 text-right">OPTIONS</div>
           </div>
-          <div className="h-px w-full bg-gray-100" />
+          <div className="hidden md:block h-px w-full bg-gray-100" />
 
           {/* Rows */}
           <ul className="divide-y divide-gray-100">
@@ -117,71 +117,67 @@ export default function DashboardPage() {
               <li className="px-4 sm:px-5 py-8 text-sm text-gray-500">Loading…</li>
             )}
             {records.map((r, idx) => (
-              <li key={r.id} className="grid grid-cols-12 items-center px-4 sm:px-5 py-4">
-                <div className="col-span-3">
-                  <div className="font-medium text-gray-900">{r.name}</div>
-                </div>
-                <div className="col-span-2 text-gray-700">{r.usage}</div>
-                <div className="col-span-5">
-                  <div className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-gray-50">
-                    <span className="truncate">
+              <li key={r.id}>
+                {/* Mobile View - Card Layout */}
+                <div className="md:hidden px-4 py-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium text-gray-900 truncate">{r.name}</div>
+                    <div className="flex items-center gap-2 text-gray-600 ml-2">
+                      {/* View/Hide */}
+                      <button
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        aria-label="Toggle visibility"
+                        onClick={() => setRevealIds((prev) => ({ ...prev, [r.id]: !prev[r.id] }))}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                          <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
+                        </svg>
+                      </button>
+                      {/* Copy */}
+                      <button
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        aria-label="Copy"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard?.writeText(r.key);
+                            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+                            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.2);
+                            showToast("Key copied to clipboard!", "success");
+                          } catch (e) {
+                            console.error("Failed to copy to clipboard:", e);
+                          }
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                          <path d="M8 7h9v10H8V7Zm-2 2H4v11h11v-2H6V9Z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-500">Usage:</span>
+                    <span className="text-sm text-gray-700">{r.usage}</span>
+                  </div>
+                  <div className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-gray-50">
+                    <span className="truncate block">
                       {revealIds[r.id] 
                         ? r.key 
                         : r.key.substring(0, 7) + '*'.repeat(Math.max(0, r.key.length - 7))
                       }
                     </span>
                   </div>
-                </div>
-                <div className="col-span-2">
-                  <div className="flex items-center justify-end gap-2 text-gray-600">
-                    {/* View/Hide */}
+                  <div className="flex items-center gap-2 pt-2">
                     <button
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
-                      aria-label="Toggle visibility"
-                      onClick={() => setRevealIds((prev) => ({ ...prev, [r.id]: !prev[r.id] }))}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
-                        <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
-                      </svg>
-                    </button>
-                    {/* Copy */}
-                    <button
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
-                      aria-label="Copy"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard?.writeText(r.key);
-                          // Play success sound
-                          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-                          const oscillator = audioContext.createOscillator();
-                          const gainNode = audioContext.createGain();
-                          
-                          oscillator.connect(gainNode);
-                          gainNode.connect(audioContext.destination);
-                          
-                          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                          oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
-                          
-                          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-                          
-                          oscillator.start(audioContext.currentTime);
-                          oscillator.stop(audioContext.currentTime + 0.2);
-                          
-                          showToast("Key copied to clipboard!", "success");
-                        } catch (e) {
-                          console.error("Failed to copy to clipboard:", e);
-                        }
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
-                        <path d="M8 7h9v10H8V7Zm-2 2H4v11h11v-2H6V9Z" />
-                      </svg>
-                    </button>
-                    {/* Edit */}
-                    <button
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
-                      aria-label="Edit"
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => {
                         setEditId(r.id);
                         setNewName(r.name);
@@ -189,14 +185,13 @@ export default function DashboardPage() {
                         setIsAddOpen(true);
                       }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden>
                         <path d="M13.8 6.2 3 17v4h4L17.8 10.2 13.8 6.2Zm1.4-1.4 2.8-2.8 4 4-2.8 2.8-4-4Z" />
                       </svg>
+                      Edit
                     </button>
-                    {/* Delete */}
                     <button
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
-                      aria-label="Delete"
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
                       onClick={async () => {
                         if (!confirm(`Delete key "${r.name}"?`)) return;
                         try {
@@ -208,10 +203,105 @@ export default function DashboardPage() {
                         }
                       }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden>
                         <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Z" />
                       </svg>
+                      Delete
                     </button>
+                  </div>
+                </div>
+
+                {/* Desktop View - Table Layout */}
+                <div className="hidden md:grid grid-cols-12 items-center px-4 sm:px-5 py-4">
+                  <div className="col-span-3">
+                    <div className="font-medium text-gray-900">{r.name}</div>
+                  </div>
+                  <div className="col-span-2 text-gray-700">{r.usage}</div>
+                  <div className="col-span-5">
+                    <div className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-gray-50">
+                      <span className="truncate">
+                        {revealIds[r.id] 
+                          ? r.key 
+                          : r.key.substring(0, 7) + '*'.repeat(Math.max(0, r.key.length - 7))
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="flex items-center justify-end gap-2 text-gray-600">
+                      {/* View/Hide */}
+                      <button
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        aria-label="Toggle visibility"
+                        onClick={() => setRevealIds((prev) => ({ ...prev, [r.id]: !prev[r.id] }))}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                          <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
+                        </svg>
+                      </button>
+                      {/* Copy */}
+                      <button
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        aria-label="Copy"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard?.writeText(r.key);
+                            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+                            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.2);
+                            showToast("Key copied to clipboard!", "success");
+                          } catch (e) {
+                            console.error("Failed to copy to clipboard:", e);
+                          }
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                          <path d="M8 7h9v10H8V7Zm-2 2H4v11h11v-2H6V9Z" />
+                        </svg>
+                      </button>
+                      {/* Edit */}
+                      <button
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        aria-label="Edit"
+                        onClick={() => {
+                          setEditId(r.id);
+                          setNewName(r.name);
+                          setNewKey(r.key);
+                          setIsAddOpen(true);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                          <path d="M13.8 6.2 3 17v4h4L17.8 10.2 13.8 6.2Zm1.4-1.4 2.8-2.8 4 4-2.8 2.8-4-4Z" />
+                        </svg>
+                      </button>
+                      {/* Delete */}
+                      <button
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        aria-label="Delete"
+                        onClick={async () => {
+                          if (!confirm(`Delete key "${r.name}"?`)) return;
+                          try {
+                            await deleteApiKey(r.id);
+                            setRecords((prev) => prev.filter((x) => x.id !== r.id));
+                            showToast("Key deleted successfully!", "error");
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+                          <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </li>
