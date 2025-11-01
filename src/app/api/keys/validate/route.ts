@@ -1,8 +1,21 @@
 import { NextResponse } from "next/server";
 import { validateApiKey, incrementApiKeyUsage } from "@/lib/apiKeyValidator";
+import { getAuthSession } from "@/lib/auth";
 
 export async function GET(request: Request) {
   console.log("GET /api/keys/validate");
+  
+  // Check authentication
+  const session = await getAuthSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        valid: false,
+        error: "Unauthorized - Authentication required",
+      },
+      { status: 401 }
+    );
+  }
   
   // Extract the API key from query parameters
   const { searchParams } = new URL(request.url);

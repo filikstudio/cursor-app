@@ -1,10 +1,23 @@
 import { NextResponse } from "next/server";
 import { validateApiKey, incrementApiKeyUsage } from "@/lib/apiKeyValidator";
 import { summarizeGithubReadme } from "@/lib/githubSummarizer";
+import { getAuthSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
   console.log("\n=== POST /api/github-summarizer ===");
   console.log("Timestamp:", new Date().toISOString());
+
+  // Check authentication
+  const session = await getAuthSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Unauthorized - Authentication required",
+      },
+      { status: 401 }
+    );
+  }
 
   try {
     const body = await request.json();
