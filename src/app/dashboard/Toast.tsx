@@ -4,14 +4,15 @@ interface ToastProps {
   show: boolean;
   message: string;
   type: ToastType;
+  onClose?: () => void;
 }
 
-export default function Toast({ show, message, type }: ToastProps) {
+export default function Toast({ show, message, type, onClose }: ToastProps) {
   if (!show) return null;
 
   return (
     <div className="fixed top-4 right-4 z-50 transform transition-all duration-500 ease-out animate-[slideInBounce_0.6s_ease-out]">
-      <div className={`rounded-lg text-white px-4 py-3 shadow-2xl backdrop-blur-sm ${
+      <div className={`rounded-lg text-white px-4 py-3 shadow-2xl backdrop-blur-sm relative ${
         type === "error" 
           ? "bg-gradient-to-r from-red-500 to-red-600 border border-red-400/20" 
           : "bg-gradient-to-r from-green-500 to-green-600 border border-green-400/20"
@@ -28,10 +29,21 @@ export default function Toast({ show, message, type }: ToastProps) {
               </svg>
             )}
           </div>
-          <span className="text-sm font-semibold tracking-wide">{message}</span>
+          <span className="text-sm font-semibold tracking-wide pr-2">{message}</span>
           <div className="w-2 h-2 bg-white/30 rounded-full animate-[ping_1s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
         </div>
-        <div className="absolute bottom-0 left-0 h-1 bg-white/40 rounded-full animate-[shrink_3s_linear_forwards]"></div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-2 right-2 inline-flex items-center justify-center rounded-md p-1 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+            aria-label="Close"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+        )}
+        <div className="absolute bottom-0 left-0 h-1 bg-white/40 rounded-full animate-[shrink_6s_linear_forwards]"></div>
       </div>
     </div>
   );

@@ -17,8 +17,10 @@ export default function SummarizerPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [coolFacts, setCoolFacts] = useState<string[]>([]);
+  const [stars, setStars] = useState<number | null>(null);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { toast, showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   // Auth check
   useEffect(() => {
@@ -43,6 +45,8 @@ export default function SummarizerPage() {
     setIsSubmitting(true);
     setSummary(null); // Clear previous content
     setCoolFacts([]);
+    setStars(null);
+    setLatestVersion(null);
 
     try {
       const result = await summarizeGithubRepo(apiKey, githubUrl);
@@ -51,6 +55,8 @@ export default function SummarizerPage() {
         // Display the summary and cool facts from the backend
         setSummary(result.data?.summary || "No summary available");
         setCoolFacts(result.data?.coolFacts || []);
+        setStars(result.data?.stars ?? null);
+        setLatestVersion(result.data?.latestVersion ?? null);
         showToast("Repository summarized successfully!", "success");
       } else {
         showToast(result.error || "Failed to process repository", "error");
@@ -199,6 +205,48 @@ export default function SummarizerPage() {
           {/* Results Section */}
           {summary && (
             <section className="rounded-2xl border border-black/[.08] bg-white shadow-sm p-6 space-y-6">
+              {/* Repository Stats */}
+              {(stars !== null || latestVersion) && (
+                <div className="flex flex-wrap items-center gap-4 pb-4 border-b border-gray-200">
+                  {stars !== null && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="h-5 w-5 text-yellow-500"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="font-semibold">{stars.toLocaleString()}</span>
+                      <span className="text-sm text-gray-500">stars</span>
+                    </div>
+                  )}
+                  {latestVersion && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="h-5 w-5 text-blue-500"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v4.59L7.3 9.24a.75.75 0 00-1.1 1.02l3.25 3.5a.75.75 0 001.1 0l3.25-3.5a.75.75 0 10-1.1-1.02l-1.95 2.1V6.75z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm text-gray-500">Latest version:</span>
+                      <span className="font-semibold">{latestVersion}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Summary Section */}
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -266,7 +314,7 @@ export default function SummarizerPage() {
       </div>
 
       {/* Toast notification */}
-      <Toast show={toast.show} message={toast.message} type={toast.type} />
+      <Toast show={toast.show} message={toast.message} type={toast.type} onClose={hideToast} />
     </div>
   );
 }

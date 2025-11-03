@@ -19,7 +19,7 @@ export function useToast() {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast({ show: false, message: "", type: "success" });
-    }, 3000);
+    }, 6000);
   };
 
   const hideToast = () => {

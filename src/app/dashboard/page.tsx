@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const [newName, setNewName] = useState("");
   const [newKey, setNewKey] = useState("");
   const [revealIds, setRevealIds] = useState<Record<string, boolean>>({});
-  const { toast, showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Auth check
@@ -116,12 +116,21 @@ export default function DashboardPage() {
             {loading && (
               <li className="px-4 sm:px-5 py-8 text-sm text-gray-500">Loading…</li>
             )}
-            {records.map((r, idx) => (
+            {records.map((r, idx) => {
+              const isInactive = r.usage >= 10;
+              return (
               <li key={r.id}>
                 {/* Mobile View - Card Layout */}
                 <div className="md:hidden px-4 py-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="font-medium text-gray-900 truncate">{r.name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="font-medium text-gray-900 truncate">{r.name}</div>
+                      {isInactive && (
+                        <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 border border-red-200">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 text-gray-600 ml-2">
                       {/* View/Hide */}
                       <button
@@ -165,7 +174,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-gray-500">Usage:</span>
-                    <span className="text-sm text-gray-700">{r.usage}</span>
+                    <span className={`text-sm ${isInactive ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
+                      {r.usage}/10
+                    </span>
                   </div>
                   <div className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-gray-50">
                     <span className="truncate block">
@@ -177,13 +188,20 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2 pt-2">
                     <button
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      className={`flex-1 inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm ${
+                        isInactive
+                          ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
                       onClick={() => {
+                        if (isInactive) return;
                         setEditId(r.id);
                         setNewName(r.name);
                         setNewKey(r.key);
                         setIsAddOpen(true);
                       }}
+                      disabled={isInactive}
+                      title={isInactive ? 'Cannot edit inactive key' : 'Edit key'}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden>
                         <path d="M13.8 6.2 3 17v4h4L17.8 10.2 13.8 6.2Zm1.4-1.4 2.8-2.8 4 4-2.8 2.8-4-4Z" />
@@ -197,7 +215,7 @@ export default function DashboardPage() {
                         try {
                           await deleteApiKey(r.id);
                           setRecords((prev) => prev.filter((x) => x.id !== r.id));
-                          showToast("Key deleted successfully!", "error");
+                          showToast("Key deleted successfully!", "success");
                         } catch (e) {
                           console.error(e);
                         }
@@ -214,9 +232,18 @@ export default function DashboardPage() {
                 {/* Desktop View - Table Layout */}
                 <div className="hidden md:grid grid-cols-12 items-center px-4 sm:px-5 py-4">
                   <div className="col-span-3">
-                    <div className="font-medium text-gray-900">{r.name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="font-medium text-gray-900">{r.name}</div>
+                      {isInactive && (
+                        <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 border border-red-200">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="col-span-2 text-gray-700">{r.usage}</div>
+                  <div className={`col-span-2 ${isInactive ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
+                    {r.usage}/10
+                  </div>
                   <div className="col-span-5">
                     <div className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-gray-50">
                       <span className="truncate">
@@ -269,14 +296,21 @@ export default function DashboardPage() {
                       </button>
                       {/* Edit */}
                       <button
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-50"
+                        className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
+                          isInactive
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
                         aria-label="Edit"
                         onClick={() => {
+                          if (isInactive) return;
                           setEditId(r.id);
                           setNewName(r.name);
                           setNewKey(r.key);
                           setIsAddOpen(true);
                         }}
+                        disabled={isInactive}
+                        title={isInactive ? 'Cannot edit inactive key' : 'Edit key'}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
                           <path d="M13.8 6.2 3 17v4h4L17.8 10.2 13.8 6.2Zm1.4-1.4 2.8-2.8 4 4-2.8 2.8-4-4Z" />
@@ -291,7 +325,7 @@ export default function DashboardPage() {
                           try {
                             await deleteApiKey(r.id);
                             setRecords((prev) => prev.filter((x) => x.id !== r.id));
-                            showToast("Key deleted successfully!", "error");
+                            showToast("Key deleted successfully!", "success");
                           } catch (e) {
                             console.error(e);
                           }
@@ -305,7 +339,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </li>
-            ))}
+            );
+            })}
             {!loading && records.length === 0 && (
               <li className="px-4 sm:px-5 py-8 text-sm text-gray-500">No keys yet. Use the + to add one.</li>
             )}
@@ -337,8 +372,11 @@ export default function DashboardPage() {
               setRecords((prev) => [...prev, result]);
               showToast("Key created successfully!", "success");
             }
-          } catch (e) {
+          } catch (e: any) {
             console.error(e);
+            const errorMessage = e?.message || "Operation failed";
+            showToast(errorMessage, "error");
+            return;
           } finally {
             setIsAddOpen(false);
             setNewName("");
@@ -349,7 +387,7 @@ export default function DashboardPage() {
       />
 
       {/* Toast notification */}
-      <Toast show={toast.show} message={toast.message} type={toast.type} />
+      <Toast show={toast.show} message={toast.message} type={toast.type} onClose={hideToast} />
 
         {/* Cancel button (bottom-right) */}
         <a

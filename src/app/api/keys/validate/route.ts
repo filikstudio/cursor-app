@@ -1,19 +1,33 @@
 import { NextResponse } from "next/server";
-import { validateApiKey, incrementApiKeyUsage } from "@/lib/apiKeyValidator";
+import { validateApiKey } from "@/lib/apiKeyValidator";
 import { getAuthSession } from "@/lib/auth";
+import { getUserIdByEmail } from "@/lib/userHelper";
 
 export async function GET(request: Request) {
   console.log("GET /api/keys/validate");
   
   // Check authentication
   const session = await getAuthSession();
-  if (!session) {
+  if (!session || !session.user?.email) {
     return NextResponse.json(
       {
         valid: false,
         error: "Unauthorized - Authentication required",
       },
       { status: 401 }
+    );
+  }
+
+  const userEmail = session.user.email;
+  const userId = await getUserIdByEmail(userEmail);
+  
+  if (!userId) {
+    return NextResponse.json(
+      {
+        valid: false,
+        error: "User not found",
+      },
+      { status: 404 }
     );
   }
   
@@ -32,8 +46,8 @@ export async function GET(request: Request) {
     );
   }
 
-  // Validate the API key using the common validator
-  const validationResult = await validateApiKey(apiKey);
+  // Validate the API key using the common validator (with ownership check)
+  const validationResult = await validateApiKey(apiKey, userId);
 
   if (!validationResult.valid) {
     return NextResponse.json({
@@ -44,9 +58,6 @@ export async function GET(request: Request) {
 
   // All validations passed
   const keyData = validationResult.keyData!;
-  
-  // Increment usage count
-  await incrementApiKeyUsage(apiKey);
 
   return NextResponse.json({
     valid: true,
@@ -54,7 +65,7 @@ export async function GET(request: Request) {
     data: {
       id: keyData.id,
       name: keyData.name,
-      usageCount: keyData.usage_count + 1,
+      usageCount: keyData.usage_count,
     },
   });
 }

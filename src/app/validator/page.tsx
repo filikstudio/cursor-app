@@ -15,7 +15,7 @@ export default function ValidatorPage() {
   const [apiKey, setApiKey] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { toast, showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   // Auth check
   useEffect(() => {
@@ -38,12 +38,12 @@ export default function ValidatorPage() {
         // Redirect to protected page on success
         router.push("/protected");
       } else {
-        // Show error toast on failure
-        showToast("Invalid API key", "error");
+        // Show error toast with message from API
+        showToast(result.error || "Invalid API key", "error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Validation error:", error);
-      showToast("Invalid API key", "error");
+      showToast(error?.message || "Invalid API key", "error");
     } finally {
       setIsValidating(false);
     }
@@ -173,7 +173,7 @@ export default function ValidatorPage() {
       </div>
 
       {/* Toast notification */}
-      <Toast show={toast.show} message={toast.message} type={toast.type} />
+      <Toast show={toast.show} message={toast.message} type={toast.type} onClose={hideToast} />
     </div>
   );
 }

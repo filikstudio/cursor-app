@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { validateApiKey, incrementApiKeyUsage } from "@/lib/apiKeyValidator";
 import { summarizeGithubReadme } from "@/lib/githubSummarizer";
 import { getAuthSession } from "@/lib/auth";
+import { getUserIdByEmail } from "@/lib/userHelper";
 
 export async function POST(request: Request) {
   console.log("\n=== POST /api/github-summarizer ===");
@@ -9,13 +10,26 @@ export async function POST(request: Request) {
 
   // Check authentication
   const session = await getAuthSession();
-  if (!session) {
+  if (!session || !session.user?.email) {
     return NextResponse.json(
       {
         success: false,
         error: "Unauthorized - Authentication required",
       },
       { status: 401 }
+    );
+  }
+
+  const userEmail = session.user.email;
+  const userId = await getUserIdByEmail(userEmail);
+  
+  if (!userId) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "User not found",
+      },
+      { status: 404 }
     );
   }
 
@@ -45,9 +59,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate the API key using the common validator
+    // Validate the API key using the common validator (with ownership check)
     console.log("Validating API key...");
-    const validationResult = await validateApiKey(apiKey);
+    const validationResult = await validateApiKey(apiKey, userId);
     console.log("API key validation result:", validationResult.valid ? "✓ Valid" : "✗ Invalid");
 
     if (!validationResult.valid) {
@@ -60,10 +74,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // API key is valid - increment usage count
+    // API key is valid
     const keyData = validationResult.keyData!;
     console.log("API key owner:", keyData.name);
-    await incrementApiKeyUsage(apiKey);
 
     // Validate GitHub URL format
     console.log("Validating GitHub URL format...");
@@ -86,16 +99,36 @@ export async function POST(request: Request) {
     console.log("✓ Valid GitHub URL - Owner:", owner, "Repo:", repo);
 
     try {
-      // Fetch README content using GitHub API
-      console.log("Fetching README from GitHub API...");
-      const readmeResponse = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/readme`,
-        {
+      // Fetch repository info and README in parallel
+      console.log("Fetching repository info from GitHub API...");
+      const [repoResponse, readmeResponse, releasesResponse] = await Promise.all([
+        fetch(`https://api.github.com/repos/${owner}/${repo}`),
+        fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
           headers: {
             'Accept': 'application/vnd.github.v3.raw'
           }
-        }
-      );
+        }),
+        fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`)
+      ]);
+
+      let starsCount = 0;
+      let latestVersion: string | null = null;
+
+      if (repoResponse.ok) {
+        const repoData = await repoResponse.json();
+        starsCount = repoData.stargazers_count || 0;
+        console.log("✓ Repository stars:", starsCount);
+      } else {
+        console.log("⚠ Could not fetch repository info");
+      }
+
+      if (releasesResponse.ok) {
+        const releaseData = await releasesResponse.json();
+        latestVersion = releaseData.tag_name || releaseData.name || null;
+        console.log("✓ Latest version:", latestVersion);
+      } else {
+        console.log("⚠ Could not fetch latest release");
+      }
 
       if (!readmeResponse.ok) {
         console.log("✗ Failed to fetch README - Status:", readmeResponse.status);
@@ -119,6 +152,9 @@ export async function POST(request: Request) {
       console.log("✓ Summarization complete - Duration:", duration, "ms");
       console.log("Summary length:", summary.summary.length, "chars, Cool facts:", summary.coolFacts.length);
 
+      // Increment usage count only after everything succeeds
+      await incrementApiKeyUsage(apiKey);
+
       // Return the summarized content
       console.log("=== Request completed successfully ===\n");
       return NextResponse.json({
@@ -130,6 +166,8 @@ export async function POST(request: Request) {
           usageCount: keyData.usage_count + 1,
           summary: summary.summary,
           coolFacts: summary.coolFacts,
+          stars: starsCount,
+          latestVersion,
         },
       });
     } catch (error) {

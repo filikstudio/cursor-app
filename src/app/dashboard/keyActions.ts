@@ -18,7 +18,10 @@ export async function saveApiKey(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, key }),
     });
-    if (!res.ok) throw new Error("Update failed");
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: "Update failed" }));
+      throw new Error(error.error || "Update failed");
+    }
     return await res.json();
   } else {
     // Create new key
@@ -27,7 +30,10 @@ export async function saveApiKey(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, key }),
     });
-    if (!res.ok) throw new Error("Create failed");
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: "Create failed" }));
+      throw new Error(error.error || "Create failed");
+    }
     return await res.json();
   }
 }
@@ -64,6 +70,8 @@ export async function summarizeGithubRepo(
     usageCount: number;
     summary?: string;
     coolFacts?: string[];
+    stars?: number;
+    latestVersion?: string | null;
   };
 }> {
   const res = await fetch("/api/github-summarizer", {
