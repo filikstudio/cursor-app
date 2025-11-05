@@ -45,7 +45,7 @@ export default function ProtectedPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 p-4 sm:p-8 overflow-auto relative pt-20 sm:pt-8">
+      <div className="flex-1 p-4 sm:p-8 overflow-auto relative pt-20 sm:pt-8 lg:pt-8">
         <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(true)} />
 
         <div className="mx-auto w-full max-w-4xl">

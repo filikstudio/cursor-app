@@ -12,18 +12,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <aside className={`w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out ${
       isOpen ? "translate-x-0" : "-translate-x-full"
-    } fixed lg:static h-screen z-[60]`}>
-      <div className="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+    } fixed lg:relative lg:translate-x-0 h-screen z-[60]`}>
+      <div className="p-4 sm:p-6 border-b border-gray-200">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Key store</h1>
-        <button
-          onClick={onClose}
-          className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-600 hover:bg-gray-100 transition-colors"
-          aria-label="Close sidebar"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-            <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
-          </svg>
-        </button>
       </div>
       <nav className="flex-1 p-3 sm:p-4">
         <ul className="space-y-1">
